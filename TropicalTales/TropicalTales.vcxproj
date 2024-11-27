@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="campfire.cpp" />
+    <ClCompile Include="celestial_body.cpp" />
     <ClCompile Include="island.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="water.cpp" />
@@ -149,15 +150,22 @@
   <ItemGroup>
     <None Include="basic.frag" />
     <None Include="basic.vert" />
+    <None Include="celestial.frag" />
+    <None Include="celestial.vert" />
     <None Include="packages.config" />
     <None Include="water.frag" />
     <None Include="water.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="campfire.h" />
+    <ClInclude Include="celestial_body.h" />
     <ClInclude Include="island.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="water.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\hooker.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

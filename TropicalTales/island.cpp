@@ -1,16 +1,16 @@
 #include "Island.h"
 
 
-Island::Island(float startX, float startY, float rx, float ry, float r, float g, float b)
+Island::Island(float startX, float startY, float rx, float ry, float ratio, float r, float g, float b)
     : x(startX), y(startY), rx(rx), ry(ry), r(r), g(g), b(b){
 
     float circle[2 * CRES + 4];
     circle[0] = x;
-    circle[1] = y;
+    circle[1] = y * ratio;
     for (int i = 0; i <= CRES; i++) {
         float angle = (3.141592 / 180) * (i * 360 / CRES);
         circle[2 + 2 * i] = x + cos(angle) * rx;
-        circle[2 + 2 * i + 1] = y + sin(angle)* ry;
+        circle[2 + 2 * i + 1] = (y + sin(angle)* ry) * ratio;
     }
     
     unsigned int stride = 2 * sizeof(float);

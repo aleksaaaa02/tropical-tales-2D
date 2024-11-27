@@ -5,6 +5,7 @@
 
 #define CRES 30
 
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -13,6 +14,9 @@
 #include <GLFW/glfw3.h>
 #include "Island.h"
 #include "water.h"
+#include "celestial_body.h"
+
+#include "stb_image.h"
 
 unsigned int compileShader(GLenum type, const char* source);
 unsigned int createShader(const char* vsSource, const char* fsSource);
@@ -32,10 +36,11 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     GLFWwindow* window;
-    unsigned int wWidth = 1280;
-    unsigned int wHeight = 800;
+    unsigned int wWidth = 1920;
+    unsigned int wHeight = 1080;
     const char wTitle[] = "[Generic Title]";
     window = glfwCreateWindow(wWidth, wHeight, wTitle, NULL, NULL);
+    //window = glfwCreateWindow(wWidth, wHeight, wTitle, glfwGetPrimaryMonitor(), NULL);
     // glfwGetPrimaryMonitor()
 
     if (window == NULL)
@@ -47,6 +52,19 @@ int main(void)
 
     glfwMakeContextCurrent(window);
 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    int textureWidth, textureHeight;
+    
+    unsigned char* imageData = stbi_load("./res/hooker.png", &textureWidth, &textureHeight, NULL, STBI_rgb_alpha);
+    GLFWimage image;
+
+    image.width = textureWidth;
+    image.height = textureHeight;
+    image.pixels = imageData;
+
+    GLFWcursor* cursor = glfwCreateCursor(&image, 0, 0);
+    glfwSetCursor(window, cursor);
+    
     if (glewInit() != GLEW_OK)
     {
         std::cout << "GLEW nije mogao da se ucita! :'(\n";
@@ -56,10 +74,17 @@ int main(void)
 
     unsigned int shader = createShader("basic.vert", "basic.frag");
     unsigned int waterShader = createShader("water.vert", "water.frag");
+    unsigned int celestialShader = createShader("celestial.vert", "celestial.frag");
+    
 
-    Island island(0.6f, -0.375f, 0.8f, 0.3f, 0.8f, 0.6f, 0.4f);
-    Island island1(-0.7f, -0.385, 0.2f, 0.11, 0.8f, 0.6f, 0.4f);
-    Water water(2.0f, -0.675f, 0.2f, 0.2f, 1.0f);
+    float aspectRatio = (float) wWidth / wHeight;
+
+    Island island(0.6f, -0.375f, 0.8f, 0.4f, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
+    Island island1(-0.7f, -0.355, 0.2f, 0.2, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
+    Water water(2.0f, -0.675f, 0.5f, 0.5f, 1.0f);
+    CelestialBody sun(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, 0.7f, 0.8f, 0.8f, 0.8f, 0.2f);
+    CelestialBody moon(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, -0.7f, 0.8f, 0.8f, 0.8f, 0.8f);
+
 
     glClearColor(0.15, 0.15, 0.15, 1.0);
 
@@ -72,12 +97,14 @@ int main(void)
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
         glClear(GL_COLOR_BUFFER_BIT);
-        
+
+        sun.render(celestialShader);
+        moon.render(celestialShader);
+
         island.render(shader);
         island1.render(shader);
 
         water.render(waterShader);
-
 
         glfwSwapBuffers(window);
     }

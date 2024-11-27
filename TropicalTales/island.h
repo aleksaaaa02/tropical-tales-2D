@@ -15,7 +15,7 @@ private:
 	const float r, g, b;
 
 public:
-	Island(float startX, float startY, float rx, float ry, float r, float g, float b);
+	Island(float startX, float startY, float rx, float ry, float ratio, float r, float g, float b);
 	~Island();
 	void render(GLuint shader);
 };
