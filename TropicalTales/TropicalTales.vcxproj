@@ -141,12 +141,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="campfire.cpp" />
+    <ClCompile Include="island.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="water.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="basic.frag" />
     <None Include="basic.vert" />
     <None Include="packages.config" />
+    <None Include="water.frag" />
+    <None Include="water.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="campfire.h" />
+    <ClInclude Include="island.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="water.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

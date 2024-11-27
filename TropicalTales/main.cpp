@@ -3,12 +3,16 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#define CRES 30
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
 #include <GL/glew.h>  
 #include <GLFW/glfw3.h>
+#include "Island.h"
+#include "water.h"
 
 unsigned int compileShader(GLenum type, const char* source);
 unsigned int createShader(const char* vsSource, const char* fsSource);
@@ -26,7 +30,6 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
 
     GLFWwindow* window;
     unsigned int wWidth = 1280;
@@ -49,65 +52,37 @@ int main(void)
         std::cout << "GLEW nije mogao da se ucita! :'(\n";
         return 3;
     }
-
-    unsigned int basicShader = createShader("basic.vert", "basic.frag");
-
-    float vertices[] = 
-    {
-        0.25, 0.0,    1.0, 0.0, 0.0, 1.0, 
-       -0.25, 0.0,    0.0, 0.0, 1.0, 1.0,
-        0.0 ,-0.5,    1.0, 1.0, 1.0, 1.0
-    };
-    unsigned int stride = (2 + 4) * sizeof(float);
-
     
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
 
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    unsigned int shader = createShader("basic.vert", "basic.frag");
+    unsigned int waterShader = createShader("water.vert", "water.frag");
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)0); 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride, (void*)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    
+    Island island(0.6f, -0.375f, 0.8f, 0.3f, 0.8f, 0.6f, 0.4f);
+    Island island1(-0.7f, -0.385, 0.2f, 0.11, 0.8f, 0.6f, 0.4f);
+    Water water(2.0f, -0.675f, 0.2f, 0.2f, 1.0f);
 
     glClearColor(0.15, 0.15, 0.15, 1.0);
 
     while (!glfwWindowShouldClose(window))
     {
+        glfwPollEvents();
+
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         {
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
-
-
         glClear(GL_COLOR_BUFFER_BIT);
+        
+        island.render(shader);
+        island1.render(shader);
 
-        // [KOD ZA CRTANJE]
-        glUseProgram(basicShader);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0);
-        glUseProgram(0);
+        water.render(waterShader);
+
 
         glfwSwapBuffers(window);
-
-        glfwPollEvents();
     }
 
-
-
-    glDeleteBuffers(1, &VBO);
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteProgram(basicShader);
+    glDeleteProgram(shader);
 
     glfwTerminate();
     return 0;
