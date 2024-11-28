@@ -5,6 +5,9 @@ layout(location = 1) in vec3 inCol;
 
 out vec3 chCol;
 
+uniform sampler2D uTex;
+
+
 void main()
 {
 	gl_Position = vec4(inPos.x, inPos.y, 0.0, 1.0);

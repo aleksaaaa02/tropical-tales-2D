@@ -150,6 +150,8 @@
   <ItemGroup>
     <None Include="basic.frag" />
     <None Include="basic.vert" />
+    <None Include="campfire.frag" />
+    <None Include="campfire.vert" />
     <None Include="celestial.frag" />
     <None Include="celestial.vert" />
     <None Include="packages.config" />

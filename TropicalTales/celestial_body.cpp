@@ -1,7 +1,7 @@
 #include "celestial_body.h"
 
-CelestialBody::CelestialBody(float x, float y, float ratio, float radius, float cycleRadius, float speed, float r, float g, float b) 
-	: x(x), y(y), radius(radius), cycleRadius(cycleRadius), speed(speed), r(r), g(g), b(b) {
+CelestialBody::CelestialBody(float x, float y, float ratio, float radius, float cycleRadius, float r, float g, float b) 
+	: x(x), y(y), radius(radius), cycleRadius(cycleRadius), ratio(ratio), r(r), g(g), b(b) {
 
 	float circle[2 * CRES + 4];
 
@@ -34,7 +34,7 @@ CelestialBody::~CelestialBody() {
     glDeleteVertexArrays(1, &vao);
 }
 
-void CelestialBody::render(GLuint shader) {
+void CelestialBody::render(GLuint shader, float speed) {
 	glUseProgram(shader);
 	
     unsigned int uColLoc = glGetUniformLocation(shader, "uCol");
@@ -43,7 +43,7 @@ void CelestialBody::render(GLuint shader) {
     
     float angle = glfwGetTime() * speed;
     float xPos = cos(angle) * cycleRadius;
-    float yPos = sin(angle) * cycleRadius;
+    float yPos = sin(angle) * cycleRadius * ratio;
     glUniform2f(uPos, xPos, yPos);
 
     glBindVertexArray(vao);

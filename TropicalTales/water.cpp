@@ -31,7 +31,7 @@ Water::~Water() {
     glDeleteVertexArrays(1, &vao);
 }
 
-void Water::render(GLuint shader) {
+void Water::render(GLuint shader, float speed) {
     glUseProgram(shader);
 
     unsigned int uWaveHeightLoc = glGetUniformLocation(shader, "waveHeight");
@@ -39,7 +39,7 @@ void Water::render(GLuint shader) {
 
     glUniform3f(uColorLoc, r, g, b);
 
-    float time = glfwGetTime();  
+    float time = glfwGetTime() * speed;  
     float waveHeight = sin(time) * 0.05f;
 
     glUniform1f(uWaveHeightLoc, waveHeight);

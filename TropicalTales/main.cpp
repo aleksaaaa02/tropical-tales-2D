@@ -15,11 +15,15 @@
 #include "Island.h"
 #include "water.h"
 #include "celestial_body.h"
+#include "campfire.h"
 
+
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 unsigned int compileShader(GLenum type, const char* source);
 unsigned int createShader(const char* vsSource, const char* fsSource);
+static unsigned loadImageToTexture(const char* filePath);
 
 int main(void)
 {
@@ -55,7 +59,7 @@ int main(void)
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     int textureWidth, textureHeight;
     
-    unsigned char* imageData = stbi_load("./res/hooker.png", &textureWidth, &textureHeight, NULL, STBI_rgb_alpha);
+    unsigned char* imageData = stbi_load("./res/hooker_mouse.png", &textureWidth, &textureHeight, NULL, STBI_rgb_alpha);
     GLFWimage image;
 
     image.width = textureWidth;
@@ -64,6 +68,8 @@ int main(void)
 
     GLFWcursor* cursor = glfwCreateCursor(&image, 0, 0);
     glfwSetCursor(window, cursor);
+
+    stbi_image_free(imageData);
     
     if (glewInit() != GLEW_OK)
     {
@@ -75,36 +81,63 @@ int main(void)
     unsigned int shader = createShader("basic.vert", "basic.frag");
     unsigned int waterShader = createShader("water.vert", "water.frag");
     unsigned int celestialShader = createShader("celestial.vert", "celestial.frag");
-    
+    unsigned int campfireShader = createShader("campfire.vert", "campfire.frag");
 
     float aspectRatio = (float) wWidth / wHeight;
 
+    GLuint fireTexture = loadImageToTexture("./res/campfire.png");
+
+    Campfire campfire(0.4f, 0.0f, 0.1f, 0.1f, aspectRatio, fireTexture);
     Island island(0.6f, -0.375f, 0.8f, 0.4f, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
     Island island1(-0.7f, -0.355, 0.2f, 0.2, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
     Water water(2.0f, -0.675f, 0.5f, 0.5f, 1.0f);
-    CelestialBody sun(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, 0.7f, 0.8f, 0.8f, 0.8f, 0.2f);
-    CelestialBody moon(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, -0.7f, 0.8f, 0.8f, 0.8f, 0.8f);
+    CelestialBody sun(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, 0.575f, 0.8f, 0.8f, 0.2f);
+    CelestialBody moon(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, -0.575f, 0.8f, 0.8f, 0.8f);
 
 
     glClearColor(0.15, 0.15, 0.15, 1.0);
-
+    float speed = 0.0f;
+    double startTime = glfwGetTime();
     while (!glfwWindowShouldClose(window))
     {
+
+        float now = glfwGetTime();
+        float deltaTime = now - startTime;
+        startTime = now;
+
         glfwPollEvents();
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         {
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
+        else if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+        {
+
+        }
+        else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+        {
+            std::cout << "Time reset" << std::endl;
+        }
+        else if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
+        {
+            std::cout << "Slowing time down" << std::endl;
+        }
+        else if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
+        {
+            std::cout << "Speeding time up" << std::endl;
+        }
+
         glClear(GL_COLOR_BUFFER_BIT);
 
-        sun.render(celestialShader);
-        moon.render(celestialShader);
+        sun.render(celestialShader, speed);
+        moon.render(celestialShader, speed);
 
         island.render(shader);
         island1.render(shader);
-
-        water.render(waterShader);
+           
+        campfire.render(campfireShader);
+        water.render(waterShader, speed);
 
         glfwSwapBuffers(window);
     }
@@ -189,4 +222,39 @@ unsigned int createShader(const char* vsSource, const char* fsSource)
     glDeleteShader(fragmentShader);
 
     return program;
+}
+
+
+static unsigned loadImageToTexture(const char* filePath) {
+    int TextureWidth;
+    int TextureHeight;
+    int TextureChannels;
+    unsigned char* ImageData = stbi_load(filePath, &TextureWidth, &TextureHeight, &TextureChannels, 0);
+
+    if (ImageData != NULL) {
+        stbi__vertical_flip(ImageData, TextureWidth, TextureHeight, TextureChannels);
+
+        GLint InternalFormat = -1;
+        switch (TextureChannels) {
+        case 1: InternalFormat = GL_RED; break;
+        case 2: InternalFormat = GL_RG; break;
+        case 3: InternalFormat = GL_RGB; break;
+        case 4: InternalFormat = GL_RGBA; break;
+        default: InternalFormat = GL_RGB; break;
+        }
+
+        unsigned int Texture;
+        glGenTextures(1, &Texture);
+        glBindTexture(GL_TEXTURE_2D, Texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat, TextureWidth, TextureHeight, 0, InternalFormat, GL_UNSIGNED_BYTE, ImageData);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        stbi_image_free(ImageData);
+        return Texture;
+    }
+    else {
+        std::cout << "Fail to load texture: " << filePath << std::endl;
+        stbi_image_free(ImageData);
+        return 0;
+    }
 }

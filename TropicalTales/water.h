@@ -13,6 +13,6 @@ private:
 public:
 	Water(float width, float height, float r, float g, float b);
 	~Water();
-	void render(GLuint shader);
+	void render(GLuint shader, float speed);
 };
 

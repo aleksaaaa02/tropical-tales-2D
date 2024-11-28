@@ -54,6 +54,12 @@
     <None Include="celestial.frag">
       <Filter>Source Files\Shader Files</Filter>
     </None>
+    <None Include="campfire.frag">
+      <Filter>Source Files\Shader Files</Filter>
+    </None>
+    <None Include="campfire.vert">
+      <Filter>Source Files\Shader Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="island.h">
