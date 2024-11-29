@@ -12,10 +12,17 @@
 
 #include <GL/glew.h>  
 #include <GLFW/glfw3.h>
+
+#include <chrono>
+#include <thread>
+
 #include "Island.h"
 #include "water.h"
 #include "celestial_body.h"
 #include "campfire.h"
+#include "moon.h"
+#include "sun.h"
+#include "palm_tree.h"
 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -79,31 +86,42 @@ int main(void)
     
 
     unsigned int shader = createShader("basic.vert", "basic.frag");
-    unsigned int waterShader = createShader("water.vert", "water.frag");
-    unsigned int celestialShader = createShader("celestial.vert", "celestial.frag");
+    unsigned int waterShader = createShader("water.vert", "basic.frag");
+    unsigned int celestialShader = createShader("celestial.vert", "basic.frag");
     unsigned int campfireShader = createShader("campfire.vert", "campfire.frag");
+    unsigned int starsShader = createShader("stars.vert", "stars.frag");
+    unsigned int baseTextureShader = createShader("base_texture.vert", "base_texture.frag");
 
     float aspectRatio = (float) wWidth / wHeight;
 
     GLuint fireTexture = loadImageToTexture("./res/campfire.png");
+    GLuint palmTexture = loadImageToTexture("./res/palm_tree.png");
 
-    Campfire campfire(0.4f, 0.0f, 0.1f, 0.1f, aspectRatio, fireTexture);
+    PalmTree palmTree1(0.5f, 0.1f, 0.2f, 0.3f, aspectRatio, palmTexture);
+    PalmTree palmTree2(0.55f, 0.1f, 0.2f, 0.325f, aspectRatio, palmTexture);
+    PalmTree palmTree3(0.65f, 0.1f, 0.2f, 0.325f, aspectRatio, palmTexture);
+    PalmTree palmTree4(-0.7f, 0.15f, 0.2f, 0.325f, aspectRatio, palmTexture);
+    
+    Campfire campfire(0.4f, -0.05f, 0.1f, 0.1f, aspectRatio, fireTexture);
+
     Island island(0.6f, -0.375f, 0.8f, 0.4f, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
-    Island island1(-0.7f, -0.355, 0.2f, 0.2, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
-    Water water(2.0f, -0.675f, 0.5f, 0.5f, 1.0f);
-    CelestialBody sun(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, 0.575f, 0.8f, 0.8f, 0.2f);
-    CelestialBody moon(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, -0.575f, 0.8f, 0.8f, 0.8f);
+    Island island1(-0.9f, -0.375, 0.425f, 0.475f, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
 
+    Water water2(2.0f, -0.0f, 0.5f, 0.5f, 1.0f);
+    Water water1(2.0f, -0.675f, 0.5f, 0.5f, 1.0f);
+    Sun sun(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, 0.575f, 0.8f, 0.8f, 0.2f);
+    Moon moon(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, -0.575f, 0.8f, 0.8f, 0.8f);
 
     glClearColor(0.15, 0.15, 0.15, 1.0);
-    float speed = 0.0f;
+
+    float speed = 1.0f;
     double startTime = glfwGetTime();
+    float now, end;
+    float ms = 1.0f / 60.0f;
+
     while (!glfwWindowShouldClose(window))
     {
-
-        float now = glfwGetTime();
-        float deltaTime = now - startTime;
-        startTime = now;
+        now = glfwGetTime();
 
         glfwPollEvents();
 
@@ -131,15 +149,27 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         sun.render(celestialShader, speed);
-        moon.render(celestialShader, speed);
-
+        moon.render(celestialShader, starsShader, speed);
+        water2.render(waterShader, speed);
         island.render(shader);
         island1.render(shader);
            
-        campfire.render(campfireShader);
-        water.render(waterShader, speed);
+        water1.render(waterShader, speed);
+        palmTree1.render(baseTextureShader);
+        palmTree2.render(baseTextureShader);
+        palmTree3.render(baseTextureShader);
+        palmTree4.render(baseTextureShader);
+
+        campfire.render(campfireShader, speed);
 
         glfwSwapBuffers(window);
+
+        end = glfwGetTime() - now;
+
+        if (end < ms) {
+            std::this_thread::sleep_for(std::chrono::duration<double>(ms - end));
+        }
+
     }
 
     glDeleteProgram(shader);

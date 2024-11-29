@@ -1,6 +1,6 @@
-#include "celestial_body.h"
+#include "moon.h"
 
-CelestialBody::CelestialBody(float x, float y, float ratio, float radius, float cycleRadius, float r, float g, float b) 
+Moon::Moon(float x, float y, float ratio, float radius, float cycleRadius, float r, float g, float b) 
 	: x(x), y(y), radius(radius), cycleRadius(cycleRadius), ratio(ratio), r(r), g(g), b(b) {
 
 	float circle[2 * CRES + 4];
@@ -27,28 +27,38 @@ CelestialBody::CelestialBody(float x, float y, float ratio, float radius, float 
     
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
 }
 
-CelestialBody::~CelestialBody() {
+Moon::~Moon() {
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &vao);
 }
 
-void CelestialBody::render(GLuint shader, float speed) {
-	glUseProgram(shader);
+void Moon::render(GLuint shader, GLuint starsShader, float speed) {
+    float angle = glfwGetTime() * speed * 0.5;
+    float xPos = cos(angle) * cycleRadius;
+    float yPos = sin(angle) * cycleRadius * ratio;
+
+    if (yPos > 0) {
+        stars.render(starsShader, speed);
+    }
+    
+    glUseProgram(shader);
 	
     unsigned int uColLoc = glGetUniformLocation(shader, "uCol");
     unsigned int uPos = glGetUniformLocation(shader, "uPos");
     glUniform3f(uColLoc, r, g, b);
     
-    float angle = glfwGetTime() * speed * 0.5;
-    float xPos = cos(angle) * cycleRadius;
-    float yPos = sin(angle) * cycleRadius * ratio;
+
     glUniform2f(uPos, xPos, yPos);
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, CRES + 2);
 
+    glBindVertexArray(0);
 	glUseProgram(0);
+    
+
 }
 

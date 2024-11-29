@@ -2,6 +2,7 @@
 
 #include<GL/glew.h>
 #include<GLFW/glfw3.h>
+#include<iostream>
 
 class Campfire
 {
@@ -13,6 +14,6 @@ private:
 public:
 	Campfire(float cx, float cy, float a, float b, float ratio, GLuint texture);
 	~Campfire();
-	void render(GLuint shader);
+	void render(GLuint shader, float speed);
 };
 

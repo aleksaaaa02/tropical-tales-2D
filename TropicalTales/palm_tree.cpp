@@ -1,7 +1,7 @@
-#include "campfire.h"
+#include "palm_tree.h"
 
 
-Campfire::Campfire(float cx, float cy, float a, float b, float ratio, GLuint texture) 
+PalmTree::PalmTree(float cx, float cy, float a, float b, float ratio, GLuint texture) 
 	: x(cx), y(cy), texture(texture), ratio(ratio), a(a), b(b) {
 
 	float vertices[] = {
@@ -33,23 +33,18 @@ Campfire::Campfire(float cx, float cy, float a, float b, float ratio, GLuint tex
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Campfire::~Campfire() {
+PalmTree::~PalmTree() {
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &vao);
 }
 
-void Campfire::render(GLuint shader, float speed) {
-
+void PalmTree::render(GLuint shader) {
 	glUseProgram(shader);
 	glBindVertexArray(vao);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-    unsigned int uPos = glGetUniformLocation(shader, "scale");
-	float scale = sin(glfwGetTime() * speed) * 0.1f + 1.0f;
-    glUniform1f(uPos, scale);
 	
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	

@@ -1,6 +1,8 @@
-#include "celestial_body.h"
+#include "sun.h"
 
-CelestialBody::CelestialBody(float x, float y, float ratio, float radius, float cycleRadius, float r, float g, float b) 
+
+
+Sun::Sun(float x, float y, float ratio, float radius, float cycleRadius, float r, float g, float b) 
 	: x(x), y(y), radius(radius), cycleRadius(cycleRadius), ratio(ratio), r(r), g(g), b(b) {
 
 	float circle[2 * CRES + 4];
@@ -29,12 +31,12 @@ CelestialBody::CelestialBody(float x, float y, float ratio, float radius, float 
     glBindVertexArray(0);
 }
 
-CelestialBody::~CelestialBody() {
+Sun::~Sun() {
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &vao);
 }
 
-void CelestialBody::render(GLuint shader, float speed) {
+void Sun::render(GLuint shader, float speed) {
 	glUseProgram(shader);
 	
     unsigned int uColLoc = glGetUniformLocation(shader, "uCol");
@@ -49,6 +51,7 @@ void CelestialBody::render(GLuint shader, float speed) {
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, CRES + 2);
 
+    glBindVertexArray(0);
 	glUseProgram(0);
 }
 
