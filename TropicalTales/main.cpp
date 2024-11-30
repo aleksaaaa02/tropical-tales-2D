@@ -1,10 +1,6 @@
 // Autor: Aleksa Vukomanovic SV66/2021
 
-
 #define _CRT_SECURE_NO_WARNINGS
-
-#define CRES 30
-
 
 #include <iostream>
 #include <fstream>
@@ -23,11 +19,25 @@
 #include "moon.h"
 #include "sun.h"
 #include "palm_tree.h"
-
+#include "circle.h"
+#include "shark.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+const unsigned int wWidth = 1920;
+const unsigned int wHeight = 1080;
+const float aspectRatio = (float) wWidth / wHeight;
+
+const int TARGET_FPS = 60;
+const float FRAME_TIME = 1.0f / TARGET_FPS; // 60 FPS target (1/60 seconds per frame)
+
+bool clicked = false;
+
+double clickX = 0.0f;
+double clickY = 0.0f;
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 unsigned int compileShader(GLenum type, const char* source);
 unsigned int createShader(const char* vsSource, const char* fsSource);
 static unsigned loadImageToTexture(const char* filePath);
@@ -47,8 +57,6 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     GLFWwindow* window;
-    unsigned int wWidth = 1920;
-    unsigned int wHeight = 1080;
     const char wTitle[] = "[Generic Title]";
     window = glfwCreateWindow(wWidth, wHeight, wTitle, NULL, NULL);
     //window = glfwCreateWindow(wWidth, wHeight, wTitle, glfwGetPrimaryMonitor(), NULL);
@@ -61,6 +69,7 @@ int main(void)
         return 2;
     }
 
+    
     glfwMakeContextCurrent(window);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -75,6 +84,8 @@ int main(void)
 
     GLFWcursor* cursor = glfwCreateCursor(&image, 0, 0);
     glfwSetCursor(window, cursor);
+   
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 
     stbi_image_free(imageData);
     
@@ -85,17 +96,20 @@ int main(void)
     }
     
 
+    unsigned int clickedCircleShader = createShader("circle_click.vert", "circle_click.frag");
     unsigned int shader = createShader("basic.vert", "basic.frag");
     unsigned int waterShader = createShader("water.vert", "basic.frag");
     unsigned int celestialShader = createShader("celestial.vert", "basic.frag");
     unsigned int campfireShader = createShader("campfire.vert", "campfire.frag");
     unsigned int starsShader = createShader("stars.vert", "stars.frag");
     unsigned int baseTextureShader = createShader("base_texture.vert", "base_texture.frag");
+    unsigned int sharkShader = createShader("shark.vert", "base_texture.frag");
 
     float aspectRatio = (float) wWidth / wHeight;
 
     GLuint fireTexture = loadImageToTexture("./res/campfire.png");
     GLuint palmTexture = loadImageToTexture("./res/palm_tree.png");
+    GLuint sharkTexture = loadImageToTexture("./res/shark1.png");
 
     PalmTree palmTree1(0.5f, 0.1f, 0.2f, 0.3f, aspectRatio, palmTexture);
     PalmTree palmTree2(0.55f, 0.1f, 0.2f, 0.325f, aspectRatio, palmTexture);
@@ -107,23 +121,31 @@ int main(void)
     Island island(0.6f, -0.375f, 0.8f, 0.4f, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
     Island island1(-0.9f, -0.375, 0.425f, 0.475f, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
 
-    Water water2(2.0f, -0.0f, 0.5f, 0.5f, 1.0f);
-    Water water1(2.0f, -0.675f, 0.5f, 0.5f, 1.0f);
+    Water water2(1.0f, -0.0f, 0.5f, 0.5f, 1.0f);
+    Water water1(1.0f, -0.3375f, 0.5f, 0.5f, 1.0f);
     Sun sun(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, 0.575f, 0.8f, 0.8f, 0.2f);
     Moon moon(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, -0.575f, 0.8f, 0.8f, 0.8f);
 
-    glClearColor(0.15, 0.15, 0.15, 1.0);
+    Shark shark(0.0f, -0.178f, 0.235f, 0.235f, sharkTexture);
+    Shark shark1(0.2f, -0.01f, 0.225, 0.225f, sharkTexture);
 
+    float circleColors[4] = { 1.0f, 0.0f, 0.0f, 0.5f };
+    Circle clickedCircle(0.0f, 0.0f, 0.0f, aspectRatio, circleColors);
+
+    glClearColor(0.15, 0.15, 0.55, 1.0);
     float speed = 1.0f;
-    double startTime = glfwGetTime();
-    float now, end;
-    float ms = 1.0f / 60.0f;
+
+    float previousTime = glfwGetTime();
+    float deltaTime;
+    float accumlatedTime = 0.0f;
 
     while (!glfwWindowShouldClose(window))
     {
-        now = glfwGetTime();
-
-        glfwPollEvents();
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - previousTime;
+        previousTime = currentTime;
+        
+        accumlatedTime += deltaTime;
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         {
@@ -131,7 +153,8 @@ int main(void)
         }
         else if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
         {
-
+            water1.switchRendering();
+            water2.switchRendering();
         }
         else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
         {
@@ -148,13 +171,33 @@ int main(void)
 
         glClear(GL_COLOR_BUFFER_BIT);
 
+
+        if (clicked) {
+            clicked = false;
+            clickedCircle.clicked(clickX, clickY);
+            shark.clicked(clickX);
+            shark1.clicked(clickX);
+        }
+
+        float waveHeight = sin(currentTime * speed) * 0.001f;
+        
+        clickedCircle.update(deltaTime, speed);
+        shark.update(deltaTime, speed, waveHeight);
+        shark1.update(deltaTime, speed, waveHeight);
+        water1.update(waveHeight);
+        water2.update(waveHeight);
+
         sun.render(celestialShader, speed);
         moon.render(celestialShader, starsShader, speed);
-        water2.render(waterShader, speed);
+
+        shark1.render(sharkShader);
+        water2.render(waterShader);
         island.render(shader);
+        shark.render(sharkShader);
         island1.render(shader);
+
            
-        water1.render(waterShader, speed);
+        water1.render(waterShader);
         palmTree1.render(baseTextureShader);
         palmTree2.render(baseTextureShader);
         palmTree3.render(baseTextureShader);
@@ -162,17 +205,23 @@ int main(void)
 
         campfire.render(campfireShader, speed);
 
-        glfwSwapBuffers(window);
 
-        end = glfwGetTime() - now;
-
-        if (end < ms) {
-            std::this_thread::sleep_for(std::chrono::duration<double>(ms - end));
+        clickedCircle.render(clickedCircleShader);
+        float renderingTime = glfwGetTime() - currentTime;
+        if (renderingTime < FRAME_TIME) {
+            std::this_thread::sleep_for(std::chrono::duration<double>(FRAME_TIME - renderingTime));
         }
-
+        
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
     glDeleteProgram(shader);
+    glDeleteProgram(baseTextureShader);
+    glDeleteProgram(campfireShader);
+    glDeleteProgram(celestialShader);
+    glDeleteProgram(starsShader);
+    glDeleteProgram(waterShader);
 
     glfwTerminate();
     return 0;
@@ -286,5 +335,17 @@ static unsigned loadImageToTexture(const char* filePath) {
         std::cout << "Fail to load texture: " << filePath << std::endl;
         stbi_image_free(ImageData);
         return 0;
+    }
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+        glfwGetCursorPos(window, &clickX, &clickY);
+        clickX = (clickX / wWidth) * 2.0f - 1.0f;
+        clickY = 1.0f - (clickY / wHeight) * 2.0f;
+        clicked = true;
+        std::cout << "HERE: " << clickX << " | " << clickY << std::endl;
     }
 }

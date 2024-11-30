@@ -143,11 +143,13 @@
   <ItemGroup>
     <ClCompile Include="campfire.cpp" />
     <ClCompile Include="celestial_body.cpp" />
+    <ClCompile Include="circle.cpp" />
     <ClCompile Include="cloud.cpp" />
     <ClCompile Include="island.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="moon.cpp" />
     <ClCompile Include="palm_tree.cpp" />
+    <ClCompile Include="shark.cpp" />
     <ClCompile Include="stars.cpp" />
     <ClCompile Include="sun.cpp" />
     <ClCompile Include="water.cpp" />
@@ -161,7 +163,10 @@
     <None Include="campfire.vert" />
     <None Include="celestial.frag" />
     <None Include="celestial.vert" />
+    <None Include="circle_click.frag" />
+    <None Include="circle_click.vert" />
     <None Include="packages.config" />
+    <None Include="shark.vert" />
     <None Include="stars.frag" />
     <None Include="stars.vert" />
     <None Include="water.frag" />
@@ -170,11 +175,13 @@
   <ItemGroup>
     <ClInclude Include="campfire.h" />
     <ClInclude Include="celestial_body.h" />
+    <ClInclude Include="circle.h" />
     <ClInclude Include="cloud.h" />
     <ClInclude Include="island.h" />
     <ClInclude Include="moon.h" />
     <ClInclude Include="palm_tree.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="shark.h" />
     <ClInclude Include="stars.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="sun.h" />

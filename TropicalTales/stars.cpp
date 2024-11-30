@@ -41,7 +41,6 @@ void Stars::render(GLuint shader, float speed) {
 	glUseProgram(shader);
 	
     unsigned int uOpacityScale = glGetUniformLocation(shader, "opacityScale");
-
 	glBindVertexArray(vao);
 	glEnable(GL_BLEND);
 	for (int i = 0; i < 10; i++) {

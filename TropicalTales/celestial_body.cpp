@@ -7,7 +7,6 @@ CelestialBody::CelestialBody(float x, float y, float ratio, float radius, float 
 
     circle[0] = x;
     circle[1] = y * ratio;
-    std::cout << ratio;
     for (int i = 0; i <= CRES; i++) {
         float angle = (3.141592 / 180) * (i * 360 / CRES);
         circle[2 + 2 * i] = (x + cos(angle) * radius);

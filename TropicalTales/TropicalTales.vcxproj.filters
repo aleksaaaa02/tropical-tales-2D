@@ -48,6 +48,12 @@
     <ClCompile Include="stars.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="circle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -87,6 +93,9 @@
     <None Include="base_texture.vert">
       <Filter>Source Files\Shader Files</Filter>
     </None>
+    <None Include="circle_click.vert" />
+    <None Include="circle_click.frag" />
+    <None Include="shark.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="island.h">
@@ -120,6 +129,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stars.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="circle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shark.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
