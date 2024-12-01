@@ -3,7 +3,7 @@
 
 
 Sun::Sun(float x, float y, float ratio, float radius, float cycleRadius, float r, float g, float b) 
-	: x(x), y(y), radius(radius), cycleRadius(cycleRadius), ratio(ratio), r(r), g(g), b(b) {
+	: x(x), y(y), radius(radius), cycleRadius(cycleRadius), ratio(ratio), r(r), g(g), b(b), elapsedTime(0) {
 
 	float circle[2 * CRES + 4];
 
@@ -36,17 +36,17 @@ Sun::~Sun() {
     glDeleteVertexArrays(1, &vao);
 }
 
-void Sun::render(GLuint shader, float speed) {
+void Sun::render(GLuint shader) {
 	glUseProgram(shader);
 	
     unsigned int uColLoc = glGetUniformLocation(shader, "uCol");
-    unsigned int uPos = glGetUniformLocation(shader, "uPos");
     glUniform3f(uColLoc, r, g, b);
-    
-    float angle = glfwGetTime() * speed * 0.5;
-    float xPos = cos(angle) * cycleRadius;
-    float yPos = sin(angle) * cycleRadius * ratio;
-    glUniform2f(uPos, xPos, yPos);
+
+    unsigned int uTransform = glGetUniformLocation(shader, "uTransform");
+
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::translate(trans, glm::vec3(x, y, 0.0f));
+    glUniformMatrix4fv(uTransform, 1, GL_FALSE, glm::value_ptr(trans));
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, CRES + 2);
@@ -55,3 +55,13 @@ void Sun::render(GLuint shader, float speed) {
 	glUseProgram(0);
 }
 
+void Sun::update(float deltaTime) {
+    elapsedTime += deltaTime * 0.2f;
+    float xPos = cos(elapsedTime) * cycleRadius;
+    float yPos = sin(elapsedTime) * cycleRadius * ratio;
+    x = xPos;
+    y = yPos;
+}
+float Sun::getSunPosition() {
+	return y;
+}

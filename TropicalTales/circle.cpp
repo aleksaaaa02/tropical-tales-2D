@@ -81,10 +81,10 @@ void Circle::clicked(float new_x, float new_y) {
 	this -> elapsedTime = 0.0f;
 }
 
-void Circle::update(float deltaTime, float speed) {
+void Circle::update(float deltaTime) {
 	if (isGrowing) {
 
-		elapsedTime += deltaTime * speed;
+		elapsedTime += deltaTime;
 		float t = (float) elapsedTime / growthDuration;
 		currentRadius = (1.0f - t) * radius + t * targetRadius;
 

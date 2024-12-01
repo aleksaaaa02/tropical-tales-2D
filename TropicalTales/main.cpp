@@ -8,10 +8,14 @@
 
 #include <GL/glew.h>  
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <chrono>
 #include <thread>
 
+#include "cloud.h"
 #include "Island.h"
 #include "water.h"
 #include "celestial_body.h"
@@ -37,10 +41,12 @@ bool clicked = false;
 double clickX = 0.0f;
 double clickY = 0.0f;
 
+void updateSkyColor(float sunPositionY);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 unsigned int compileShader(GLenum type, const char* source);
 unsigned int createShader(const char* vsSource, const char* fsSource);
 static unsigned loadImageToTexture(const char* filePath);
+void setLightColor(float sunPosition, GLuint shader);
 
 int main(void)
 {
@@ -82,7 +88,7 @@ int main(void)
     image.height = textureHeight;
     image.pixels = imageData;
 
-    GLFWcursor* cursor = glfwCreateCursor(&image, 0, 0);
+    GLFWcursor* cursor = glfwCreateCursor(&image, 36, 36);
     glfwSetCursor(window, cursor);
    
     glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -104,19 +110,20 @@ int main(void)
     unsigned int starsShader = createShader("stars.vert", "stars.frag");
     unsigned int baseTextureShader = createShader("base_texture.vert", "base_texture.frag");
     unsigned int sharkShader = createShader("shark.vert", "base_texture.frag");
-
-    float aspectRatio = (float) wWidth / wHeight;
-
+    
     GLuint fireTexture = loadImageToTexture("./res/campfire.png");
     GLuint palmTexture = loadImageToTexture("./res/palm_tree.png");
     GLuint sharkTexture = loadImageToTexture("./res/shark1.png");
+    GLuint cloudTexture = loadImageToTexture("./res/cloud.png");
+    GLuint firelightTexture = loadImageToTexture("./res/light.png");
+
 
     PalmTree palmTree1(0.5f, 0.1f, 0.2f, 0.3f, aspectRatio, palmTexture);
     PalmTree palmTree2(0.55f, 0.1f, 0.2f, 0.325f, aspectRatio, palmTexture);
     PalmTree palmTree3(0.65f, 0.1f, 0.2f, 0.325f, aspectRatio, palmTexture);
     PalmTree palmTree4(-0.7f, 0.15f, 0.2f, 0.325f, aspectRatio, palmTexture);
     
-    Campfire campfire(0.4f, -0.05f, 0.1f, 0.1f, aspectRatio, fireTexture);
+    Campfire campfire(0.4f, -0.05f, 0.1f, 0.1f, aspectRatio, fireTexture, firelightTexture);
 
     Island island(0.6f, -0.375f, 0.8f, 0.4f, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
     Island island1(-0.9f, -0.375, 0.425f, 0.475f, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
@@ -129,11 +136,16 @@ int main(void)
     Shark shark(0.0f, -0.178f, 0.235f, 0.235f, sharkTexture);
     Shark shark1(0.2f, -0.01f, 0.225, 0.225f, sharkTexture);
 
+    Cloud cloud1(0.0f, 0.3f, 0.25, 0.25, 0.05, cloudTexture);
+    Cloud cloud2(0.3f, 0.4f, 0.25, 0.35, 0.15, cloudTexture);
+    Cloud cloud3(-0.2f, 0.5f, 0.25, 0.35, 0.05, cloudTexture);
+    Cloud cloud4(-0.5f, 0.6f, 0.25, 0.25, 0.25, cloudTexture);
+
     float circleColors[4] = { 1.0f, 0.0f, 0.0f, 0.5f };
     Circle clickedCircle(0.0f, 0.0f, 0.0f, aspectRatio, circleColors);
 
     glClearColor(0.15, 0.15, 0.55, 1.0);
-    float speed = 1.0f;
+    float timeSpeed = 1.0f;
 
     float previousTime = glfwGetTime();
     float deltaTime;
@@ -144,7 +156,7 @@ int main(void)
         float currentTime = glfwGetTime();
         float deltaTime = currentTime - previousTime;
         previousTime = currentTime;
-        
+        deltaTime = deltaTime * timeSpeed;
         accumlatedTime += deltaTime;
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -159,14 +171,17 @@ int main(void)
         else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
         {
             std::cout << "Time reset" << std::endl;
+            timeSpeed = 1.0f;
         }
-        else if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
+        else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         {
             std::cout << "Slowing time down" << std::endl;
+            if(timeSpeed > 0.1f) timeSpeed -= 0.05f;
         }
-        else if (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
+        else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         {
             std::cout << "Speeding time up" << std::endl;
+            if(timeSpeed < 1.4f) timeSpeed += 0.05f;
         }
 
         glClear(GL_COLOR_BUFFER_BIT);
@@ -179,16 +194,38 @@ int main(void)
             shark1.clicked(clickX);
         }
 
-        float waveHeight = sin(currentTime * speed) * 0.001f;
+        float waveHeight = sin(currentTime * timeSpeed) * 0.001f;
         
-        clickedCircle.update(deltaTime, speed);
-        shark.update(deltaTime, speed, waveHeight);
-        shark1.update(deltaTime, speed, waveHeight);
+        clickedCircle.update(deltaTime);
+        shark.update(deltaTime, waveHeight);
+        shark1.update(deltaTime, waveHeight);
         water1.update(waveHeight);
         water2.update(waveHeight);
+        cloud1.update(deltaTime);
+        cloud2.update(deltaTime);
+        cloud3.update(deltaTime);
+        cloud4.update(deltaTime);
+        sun.update(deltaTime);
+        moon.update(deltaTime);
+        campfire.update(deltaTime);
 
-        sun.render(celestialShader, speed);
-        moon.render(celestialShader, starsShader, speed);
+        float sunPosition = sun.getSunPosition();
+        updateSkyColor(sunPosition);
+        setLightColor(sunPosition, baseTextureShader);
+        setLightColor(sunPosition, sharkShader);
+        setLightColor(sunPosition, shader);
+        setLightColor(sunPosition, waterShader);
+
+
+        cloud1.render(sharkShader);
+        cloud2.render(sharkShader);
+        
+        sun.render(celestialShader);
+        moon.render(celestialShader, starsShader);
+
+        cloud3.render(sharkShader);
+        cloud4.render(sharkShader);
+
 
         shark1.render(sharkShader);
         water2.render(waterShader);
@@ -196,15 +233,14 @@ int main(void)
         shark.render(sharkShader);
         island1.render(shader);
 
-           
         water1.render(waterShader);
         palmTree1.render(baseTextureShader);
         palmTree2.render(baseTextureShader);
         palmTree3.render(baseTextureShader);
         palmTree4.render(baseTextureShader);
 
-        campfire.render(campfireShader, speed);
-
+        campfire.render(campfireShader);
+        
 
         clickedCircle.render(clickedCircleShader);
         float renderingTime = glfwGetTime() - currentTime;
@@ -348,4 +384,43 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         clicked = true;
         std::cout << "HERE: " << clickX << " | " << clickY << std::endl;
     }
+}
+
+void setLightColor(float sunPosition, GLuint shader) {
+    float lightIntensity = sin(sunPosition * glm::pi<float>() / 2.0f);  
+    glm::vec3 lightColor;
+    if (lightIntensity > 0) {
+        lightColor = glm::mix(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.6f, 0.5f, 0.3f), 1.0f - lightIntensity);
+    } else {
+        lightColor = glm::mix(glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.3f, 0.3f, 0.3f), -lightIntensity);      
+    }
+    glUseProgram(shader);
+    GLuint lightColorLoc = glGetUniformLocation(shader, "uLightColor");
+    glUniform3f(lightColorLoc, lightColor.r, lightColor.g, lightColor.b);
+    glUseProgram(0);
+}
+
+
+void updateSkyColor(float sunYPos) {
+    glm::vec3 skyColor;
+
+    if (sunYPos > 0.75f) {
+        skyColor = glm::mix(glm::vec3(0.53f, 0.81f, 0.98f), glm::vec3(0.8f, 0.9f, 1.0f), (sunYPos - 0.75f) / 0.25f);
+    }
+    else if (sunYPos > 0.05f) {
+        float factor = (sunYPos - 0.25f) / 0.5f;
+        skyColor = glm::mix(glm::vec3(1.0f, 0.6f, 0.2f), glm::vec3(0.53f, 0.81f, 0.98f), factor);
+    }
+    else if (sunYPos > -0.05f) {
+        float factor = (sunYPos + 0.25f) / 0.5f;
+        skyColor = glm::mix(glm::vec3(1.0f, 0.6f, 0.2f), glm::vec3(1.0f, 0.4f, 0.4f), factor);
+    }
+    else if (sunYPos < -0.75f) {
+        float factor = (sunYPos + 0.75f) / 0.5f;
+        skyColor = glm::mix(glm::vec3(0.2f, 0.1f, 0.3f), glm::vec3(0.05f, 0.05f, 0.1f), factor);
+    }
+    else {
+        skyColor = glm::vec3(0.15f, 0.15f, 0.1f);
+    }
+    glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
 }

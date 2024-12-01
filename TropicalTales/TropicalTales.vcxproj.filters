@@ -54,6 +54,9 @@
     <ClCompile Include="shark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="firelight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -135,6 +138,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="shark.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="firelight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

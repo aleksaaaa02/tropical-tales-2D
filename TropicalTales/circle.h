@@ -28,7 +28,7 @@ public:
 	~Circle();
 	void render(GLuint shader);
 	void clicked(float new_x, float new_y);
-	void update(float deltaTime, float speed);
+	void update(float deltaTime);
 
 };
 

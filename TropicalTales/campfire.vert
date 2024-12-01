@@ -3,15 +3,12 @@
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aTexCoord;
 
-out vec3 outColor;
 out vec2 TexCoord;
 
-uniform float scale;
-const vec2 center = vec2(0.4, -0.05);
+uniform mat4 uTransform;
+
 void main() {
-	//gl_Position = vec4(aPos.x * scale, aPos.y * scale, 0.0, 1.0);
-	vec2 scaledPos = (aPos - center) * scale + center;
-    gl_Position = vec4(scaledPos, 0.0, 1.0);
+    gl_Position = uTransform * vec4(aPos, 0.0, 1.0);
 	TexCoord = aTexCoord;
 
 }

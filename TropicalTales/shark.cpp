@@ -45,9 +45,7 @@ Shark::~Shark() {
     glDeleteVertexArrays(1, &vao);
 }
 
-void Shark::update(float deltaTime, float speed, float waveHeight) {
-	// move shark to the right or to do left depending on moveRight condition
-	// we can add if clicked to translate it to go to Y position 
+void Shark::update(float deltaTime, float waveHeight) {
     if (hasTarget) {
         float dx = targetX - x;
         if (std::abs(dx) < 0.1f) {
@@ -56,12 +54,12 @@ void Shark::update(float deltaTime, float speed, float waveHeight) {
         }
         else {
             if (dx > 0) {
-                x += deltaTime * speed * 0.7;
+                x += deltaTime * 0.7;
                 if (x > targetX) x = targetX;
                 moveRight = true;
             }
             else {
-                x -= deltaTime * speed * 0.7;
+                x -= deltaTime * 0.7;
                 if (x < targetX) x = targetX;
                 moveRight = false;
             }
@@ -69,11 +67,11 @@ void Shark::update(float deltaTime, float speed, float waveHeight) {
     }
     else {
 	    if (moveRight) {
-            x += speed * deltaTime * 0.4;
+            x += deltaTime * 0.4;
             if (x > 1.0f) moveRight = false;
         }   
         else {
-            x -= speed * deltaTime * 0.4;
+            x -= deltaTime * 0.4;
             if (x < -1.0f) moveRight = true;
         }
     }

@@ -1,7 +1,7 @@
 #include "moon.h"
 
 Moon::Moon(float x, float y, float ratio, float radius, float cycleRadius, float r, float g, float b) 
-	: x(x), y(y), radius(radius), cycleRadius(cycleRadius), ratio(ratio), r(r), g(g), b(b) {
+	: x(x), y(y), radius(radius), cycleRadius(cycleRadius), ratio(ratio), r(r), g(g), b(b), elapsedTime(0) {
 
 	float circle[2 * CRES + 4];
 
@@ -35,23 +35,21 @@ Moon::~Moon() {
     glDeleteVertexArrays(1, &vao);
 }
 
-void Moon::render(GLuint shader, GLuint starsShader, float speed) {
-    float angle = glfwGetTime() * speed * 0.5;
-    float xPos = cos(angle) * cycleRadius;
-    float yPos = sin(angle) * cycleRadius * ratio;
-
-    if (yPos > 0) {
-        stars.render(starsShader, speed);
+void Moon::render(GLuint shader, GLuint starsShader) {
+    if (y > 0.1) {
+        stars.render(starsShader, 1.0f);
     }
     
     glUseProgram(shader);
-	
-    unsigned int uColLoc = glGetUniformLocation(shader, "uCol");
-    unsigned int uPos = glGetUniformLocation(shader, "uPos");
-    glUniform3f(uColLoc, r, g, b);
     
+    unsigned int uColLoc = glGetUniformLocation(shader, "uCol");
+    unsigned int uTransform = glGetUniformLocation(shader, "uTransform");
 
-    glUniform2f(uPos, xPos, yPos);
+    glUniform3f(uColLoc, r, g, b);
+
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::translate(trans, glm::vec3(x, y, 0.0f));
+    glUniformMatrix4fv(uTransform, 1, GL_FALSE, glm::value_ptr(trans));
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, CRES + 2);
@@ -59,6 +57,13 @@ void Moon::render(GLuint shader, GLuint starsShader, float speed) {
     glBindVertexArray(0);
 	glUseProgram(0);
     
+}
 
+void Moon::update(float deltaTime) {
+    elapsedTime += deltaTime * 0.2f;
+    float xPos = cos(elapsedTime) * cycleRadius;
+    float yPos = sin(elapsedTime) * cycleRadius * ratio;
+    x = xPos;
+    y = yPos;
 }
 

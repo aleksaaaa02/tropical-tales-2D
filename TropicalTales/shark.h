@@ -19,7 +19,7 @@ private:
 public:
 	Shark(float cx, float cy, float a, float b, GLuint texture);
 	~Shark();
-	void update(float deltaTime, float speed, float waveHeight);
+	void update(float deltaTime, float waveHeight);
 	void render(GLuint shader);
 	void clicked(float clickedX);
 

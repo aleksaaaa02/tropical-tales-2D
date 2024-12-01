@@ -145,6 +145,7 @@
     <ClCompile Include="celestial_body.cpp" />
     <ClCompile Include="circle.cpp" />
     <ClCompile Include="cloud.cpp" />
+    <ClCompile Include="firelight.cpp" />
     <ClCompile Include="island.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="moon.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="celestial_body.h" />
     <ClInclude Include="circle.h" />
     <ClInclude Include="cloud.h" />
+    <ClInclude Include="firelight.h" />
     <ClInclude Include="island.h" />
     <ClInclude Include="moon.h" />
     <ClInclude Include="palm_tree.h" />

@@ -1,9 +1,8 @@
-#include "campfire.h"
+#include "firelight.h"
 
 
-Campfire::Campfire(float cx, float cy, float a, float b, float ratio, GLuint texture, GLuint lightTexture) 
-	: x(cx), y(cy), texture(texture), ratio(ratio), a(a), b(b), elapsedTime(0), red(1.0f), green(0.5f), blue(0.0f)
-	, firelight(cx, cy, a, b, ratio, lightTexture) {
+Firelight::Firelight(float cx, float cy, float a, float b, float ratio, GLuint texture)
+	:cx(cx), cy(cy), a(a + 0.1f), b(b + 0.1f), lightTexture(texture) {
 
 	float vertices[] = {
 		cx - a / 2, (cy - b / 2) * ratio, 0.0f, 0.0f,
@@ -32,66 +31,48 @@ Campfire::Campfire(float cx, float cy, float a, float b, float ratio, GLuint tex
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
 }
 
-Campfire::~Campfire() {
+Firelight::~Firelight() {
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &vao);
 }
 
-void Campfire::render(GLuint shader) {
+void Firelight::update(float deltaTime, float r, float g, float b, float scaleCampfire) {
+	scale = scaleCampfire;
+	red = r;
+	green = g;
+	blue = b;
+}
+
+void Firelight::render(GLuint shader) {
 
 	glUseProgram(shader);
 	glBindVertexArray(vao);
-
 	unsigned int uTransform = glGetUniformLocation(shader, "uTransform");
 	unsigned int uCol = glGetUniformLocation(shader, "uCol");
 
     glm::mat4 trans = glm::mat4(1.0f);
 
-	trans = glm::translate(trans, glm::vec3(x, y, 0.0f));
+	trans = glm::translate(trans, glm::vec3(cx, cy, 0.0f));
     trans = glm::scale(trans, glm::vec3(scale, scale, 1.0f));
-	trans = glm::translate(trans, glm::vec3(-x, -y, 0.0f));
+	trans = glm::translate(trans, glm::vec3(-cx, -cy, 0.0f));
 
     glUniformMatrix4fv(uTransform, 1, GL_FALSE, glm::value_ptr(trans));
-	glUniform4f(uCol, red, green, blue, 1.0f);
+	glUniform4f(uCol, red, green, blue, 0.2f);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, lightTexture);
+
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	
 	glDisable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
 	glBindVertexArray(0);
 	glUseProgram(0);
-
-	firelight.render(shader);
-
-}
-void Campfire::update(float deltaTime) {
-	elapsedTime += deltaTime;
-
-	scale = 1.0f + 0.2f * sin(elapsedTime * 0.5f);
-	red = 1.0f;
-	green = 0.5f + 0.3f * sin(elapsedTime * 3.0f);
-	blue = 0.0f;
-
-	firelight.update(deltaTime, red, green, blue, scale + 0.1);
-
-	//for (size_t i = 0; i < smokePositions.size(); ++i) {
-	//	smokePositions[i].y += deltaTime * 0.5f;  // Move upward
-	//	smokeAlphas[i] -= deltaTime * 0.3f;      // Fade out
-
-	//	if (smokeAlphas[i] <= 0.0f) {
-	//		smokePositions.erase(smokePositions.begin() + i);
-	//		smokeAlphas.erase(smokeAlphas.begin() + i);
-	//	}
- //   }
-}
-
-void Campfire::interact() {
 
 }
