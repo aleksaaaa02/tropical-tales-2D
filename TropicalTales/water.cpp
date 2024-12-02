@@ -61,3 +61,7 @@ void Water::update(float waveHeight) {
 void Water::switchRendering() {
     renderWater = !renderWater;
 }
+
+bool Water::isClickedOn(float clickY) {
+    return clickY < height;
+}

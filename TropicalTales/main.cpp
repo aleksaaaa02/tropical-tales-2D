@@ -28,6 +28,7 @@
 #include "palm_tree.h"
 #include "circle.h"
 #include "shark.h"
+#include "smoke_letters_effect.h"
 
 #include "text_renderer.h"
 
@@ -71,7 +72,6 @@ int main(void)
     const char wTitle[] = "[Tropical Tales]";
     window = glfwCreateWindow(wWidth, wHeight, wTitle, NULL, NULL);
     //window = glfwCreateWindow(wWidth, wHeight, wTitle, glfwGetPrimaryMonitor(), NULL);
-     //glfwGetPrimaryMonitor()
 
     if (window == NULL)
     {
@@ -79,6 +79,7 @@ int main(void)
         glfwTerminate();
         return 2;
     }
+    
     FT_Library ft;
     if (FT_Init_FreeType(&ft))
     {
@@ -119,9 +120,11 @@ int main(void)
         return 3;
     }
 
+    // Text renderer
     unsigned int textShader = createShader("text.vert", "text.frag");
     TextRenderer tr(face, ft, textShader, wWidth, wHeight);
 
+    // Shader programs 
     unsigned int clickedCircleShader = createShader("circle_click.vert", "circle_click.frag");
     unsigned int shader = createShader("basic.vert", "basic.frag");
     unsigned int waterShader = createShader("water.vert", "basic.frag");
@@ -131,6 +134,8 @@ int main(void)
     unsigned int baseTextureShader = createShader("base_texture.vert", "base_texture.frag");
     unsigned int sharkShader = createShader("shark.vert", "base_texture.frag");
     
+    // Objects used in this project
+
     GLuint fireTexture = loadImageToTexture("./res/campfire.png");
     GLuint palmTexture = loadImageToTexture("./res/palm_tree.png");
     GLuint sharkTexture = loadImageToTexture("./res/shark1.png");
@@ -148,7 +153,7 @@ int main(void)
     Island island(0.6f, -0.375f, 0.8f, 0.4f, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
     Island island1(-0.9f, -0.375, 0.425f, 0.475f, (float) wWidth/wHeight, 0.8f, 0.6f, 0.4f);
 
-    Water water2(1.0f, -0.0f, 0.5f, 0.5f, 1.0f);
+    Water water2(1.0f, 0.0f, 0.5f, 0.5f, 1.0f);
     Water water1(1.0f, -0.3375f, 0.5f, 0.5f, 1.0f);
     Sun sun(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, 0.575f, 0.8f, 0.8f, 0.2f);
     Moon moon(0.0f, -0.1f, (float) wWidth/wHeight, 0.05f, -0.575f, 0.8f, 0.8f, 0.8f);
@@ -163,16 +168,15 @@ int main(void)
 
     float circleColors[4] = { 1.0f, 0.0f, 0.0f, 0.5f };
     Circle clickedCircle(0.0f, 0.0f, 0.0f, aspectRatio, circleColors);
+    
 
-
-    // OpenGL setup
+    SmokeLettersEffect sle(1300.0f, 600.0f);
 
     float timeSpeed = 1.0f;
 
     float previousTime = glfwGetTime();
     float deltaTime;
     float accumlatedTime = 0.0f;
-
 
     while (!glfwWindowShouldClose(window))
     {
@@ -207,23 +211,24 @@ int main(void)
         else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         {
             std::cout << "Speeding time up" << std::endl;
-            if(timeSpeed < 1.4f) timeSpeed += 0.05f;
+            if(timeSpeed < 2.0f) timeSpeed += 0.05f;
+        }
+
+        if (clicked) {
+            clicked = false;
+            if (water1.isClickedOn(clickY) || water2.isClickedOn(clickY)) {
+                clickedCircle.clicked(clickX, clickY);
+                shark.clicked(clickX);
+                shark1.clicked(clickX);
+            }
+            if (campfire.isClickedOn(clickX, clickY)) {
+                sle.clicked();
+            }
         }
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-
-        if (clicked) {
-            clicked = false;
-            clickedCircle.clicked(clickX, clickY);
-            shark.clicked(clickX);
-            shark1.clicked(clickX);
-        }
-
-        // Update objects
-
-        float waveHeight = sin(currentTime * timeSpeed) * 0.001f;
-        
+        float waveHeight = sin(accumlatedTime) * timeSpeed * 0.001f;
         clickedCircle.update(deltaTime);
         shark.update(deltaTime, waveHeight);
         shark1.update(deltaTime, waveHeight);
@@ -236,6 +241,8 @@ int main(void)
         sun.update(deltaTime);
         moon.update(deltaTime);
         campfire.update(deltaTime);
+        sle.updateSpawner(deltaTime);
+        sle.updateLetters(deltaTime);
 
         float sunPosition = sun.getSunPosition();
         updateSkyColor(sunPosition);
@@ -244,23 +251,17 @@ int main(void)
         setLightColor(sunPosition, shader);
         setLightColor(sunPosition, waterShader);
 
-        // rendering phase
         cloud1.render(sharkShader);
         cloud2.render(sharkShader);
-        
         sun.render(celestialShader);
         moon.render(celestialShader, starsShader);
-
         cloud3.render(sharkShader);
         cloud4.render(sharkShader);
-
-
         shark1.render(sharkShader);
         water2.render(waterShader);
         island.render(shader);
         shark.render(sharkShader);
         island1.render(shader);
-
         water1.render(waterShader);
         palmTree1.render(baseTextureShader);
         palmTree2.render(baseTextureShader);
@@ -270,6 +271,7 @@ int main(void)
         campfire.render(campfireShader);
 
         tr.RenderText("Aleksa Vukomanovic SV66/2021", 10.0f, 50.0f, 0.8f, glm::vec3(0.8, 0.8f, 0.8f));
+        sle.render(tr);
 
         clickedCircle.render(clickedCircleShader);
         float renderingTime = glfwGetTime() - currentTime;
@@ -335,7 +337,6 @@ unsigned int compileShader(GLenum type, const char* source)
 }
 unsigned int createShader(const char* vsSource, const char* fsSource)
 {
-
 
     unsigned int program;
     unsigned int vertexShader;

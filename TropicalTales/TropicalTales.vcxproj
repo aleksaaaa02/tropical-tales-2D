@@ -153,6 +153,7 @@
     <ClCompile Include="moon.cpp" />
     <ClCompile Include="palm_tree.cpp" />
     <ClCompile Include="shark.cpp" />
+    <ClCompile Include="smoke_letters_effect.cpp" />
     <ClCompile Include="stars.cpp" />
     <ClCompile Include="sun.cpp" />
     <ClCompile Include="text_renderer.cpp" />
@@ -189,6 +190,7 @@
     <ClInclude Include="palm_tree.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shark.h" />
+    <ClInclude Include="smoke_letters_effect.h" />
     <ClInclude Include="stars.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="sun.h" />

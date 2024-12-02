@@ -25,5 +25,6 @@ public:
 	void render(GLuint shader);
 	void update(float deltaTime);
 	void interact();
+	bool isClickedOn(float, float);
 };
 

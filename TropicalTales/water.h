@@ -21,5 +21,7 @@ public:
 	void render(GLuint shader);
 	void update(float waveHeight);
 	void switchRendering();
+	bool isClickedOn(float);
+
 };
 

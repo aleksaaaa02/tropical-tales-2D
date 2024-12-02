@@ -80,18 +80,14 @@ void Campfire::update(float deltaTime) {
 	blue = 0.0f;
 
 	firelight.update(deltaTime, red, green, blue, scale + 0.1);
-
-	//for (size_t i = 0; i < smokePositions.size(); ++i) {
-	//	smokePositions[i].y += deltaTime * 0.5f;  // Move upward
-	//	smokeAlphas[i] -= deltaTime * 0.3f;      // Fade out
-
-	//	if (smokeAlphas[i] <= 0.0f) {
-	//		smokePositions.erase(smokePositions.begin() + i);
-	//		smokeAlphas.erase(smokeAlphas.begin() + i);
-	//	}
- //   }
 }
 
 void Campfire::interact() {
 
+}
+
+bool Campfire::isClickedOn(float clickX, float clickY) {
+	float dx = std::abs(clickX - x);
+	float dy = std::abs(clickY - y);
+	return dx < 0.1 && dy < 0.1;
 }
