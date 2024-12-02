@@ -12,6 +12,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <chrono>
 #include <thread>
 
@@ -25,6 +28,8 @@
 #include "palm_tree.h"
 #include "circle.h"
 #include "shark.h"
+
+#include "text_renderer.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -63,10 +68,10 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     GLFWwindow* window;
-    const char wTitle[] = "[Generic Title]";
+    const char wTitle[] = "[Tropical Tales]";
     window = glfwCreateWindow(wWidth, wHeight, wTitle, NULL, NULL);
     //window = glfwCreateWindow(wWidth, wHeight, wTitle, glfwGetPrimaryMonitor(), NULL);
-    // glfwGetPrimaryMonitor()
+     //glfwGetPrimaryMonitor()
 
     if (window == NULL)
     {
@@ -74,8 +79,21 @@ int main(void)
         glfwTerminate();
         return 2;
     }
+    FT_Library ft;
+    if (FT_Init_FreeType(&ft))
+    {
+        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+        return -1;
+    }
 
-    
+    FT_Face face;
+    if (FT_New_Face(ft, "./res/Daydream.ttf", 0, &face))
+    {
+        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;  
+        return -1;
+    }
+
+
     glfwMakeContextCurrent(window);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -100,7 +118,9 @@ int main(void)
         std::cout << "GLEW nije mogao da se ucita! :'(\n";
         return 3;
     }
-    
+
+    unsigned int textShader = createShader("text.vert", "text.frag");
+    TextRenderer tr(face, ft, textShader, wWidth, wHeight);
 
     unsigned int clickedCircleShader = createShader("circle_click.vert", "circle_click.frag");
     unsigned int shader = createShader("basic.vert", "basic.frag");
@@ -144,20 +164,26 @@ int main(void)
     float circleColors[4] = { 1.0f, 0.0f, 0.0f, 0.5f };
     Circle clickedCircle(0.0f, 0.0f, 0.0f, aspectRatio, circleColors);
 
-    glClearColor(0.15, 0.15, 0.55, 1.0);
+
+    // OpenGL setup
+
     float timeSpeed = 1.0f;
 
     float previousTime = glfwGetTime();
     float deltaTime;
     float accumlatedTime = 0.0f;
 
+
     while (!glfwWindowShouldClose(window))
     {
+        // frame preparation
         float currentTime = glfwGetTime();
         float deltaTime = currentTime - previousTime;
         previousTime = currentTime;
         deltaTime = deltaTime * timeSpeed;
         accumlatedTime += deltaTime;
+
+        // Input logic - extract in logic (ako stignem)
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         {
@@ -194,6 +220,8 @@ int main(void)
             shark1.clicked(clickX);
         }
 
+        // Update objects
+
         float waveHeight = sin(currentTime * timeSpeed) * 0.001f;
         
         clickedCircle.update(deltaTime);
@@ -216,7 +244,7 @@ int main(void)
         setLightColor(sunPosition, shader);
         setLightColor(sunPosition, waterShader);
 
-
+        // rendering phase
         cloud1.render(sharkShader);
         cloud2.render(sharkShader);
         
@@ -240,15 +268,18 @@ int main(void)
         palmTree4.render(baseTextureShader);
 
         campfire.render(campfireShader);
-        
+
+        tr.RenderText("Aleksa Vukomanovic SV66/2021", 10.0f, 50.0f, 0.8f, glm::vec3(0.8, 0.8f, 0.8f));
 
         clickedCircle.render(clickedCircleShader);
         float renderingTime = glfwGetTime() - currentTime;
+        
         if (renderingTime < FRAME_TIME) {
             std::this_thread::sleep_for(std::chrono::duration<double>(FRAME_TIME - renderingTime));
         }
-        
+       
         glfwSwapBuffers(window);
+
         glfwPollEvents();
     }
 

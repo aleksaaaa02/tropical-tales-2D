@@ -57,6 +57,9 @@
     <ClCompile Include="firelight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="text_renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -96,9 +99,21 @@
     <None Include="base_texture.vert">
       <Filter>Source Files\Shader Files</Filter>
     </None>
-    <None Include="circle_click.vert" />
-    <None Include="circle_click.frag" />
-    <None Include="shark.vert" />
+    <None Include="text.vert">
+      <Filter>Source Files\Shader Files</Filter>
+    </None>
+    <None Include="shark.vert">
+      <Filter>Source Files\Shader Files</Filter>
+    </None>
+    <None Include="text.frag">
+      <Filter>Source Files\Shader Files</Filter>
+    </None>
+    <None Include="circle_click.frag">
+      <Filter>Source Files\Shader Files</Filter>
+    </None>
+    <None Include="circle_click.vert">
+      <Filter>Source Files\Shader Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="island.h">
@@ -141,6 +156,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="firelight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="text_renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
