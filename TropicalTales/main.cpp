@@ -70,8 +70,8 @@ int main(void)
 
     GLFWwindow* window;
     const char wTitle[] = "[Tropical Tales]";
-    window = glfwCreateWindow(wWidth, wHeight, wTitle, NULL, NULL);
-    //window = glfwCreateWindow(wWidth, wHeight, wTitle, glfwGetPrimaryMonitor(), NULL);
+    //window = glfwCreateWindow(wWidth, wHeight, wTitle, NULL, NULL);
+    window = glfwCreateWindow(wWidth, wHeight, wTitle, glfwGetPrimaryMonitor(), NULL);
 
     if (window == NULL)
     {
