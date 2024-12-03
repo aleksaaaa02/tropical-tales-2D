@@ -177,6 +177,7 @@ int main(void)
     float previousTime = glfwGetTime();
     float deltaTime;
     float accumlatedTime = 0.0f;
+    int previousBKeyState = GLFW_RELEASE;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -188,12 +189,13 @@ int main(void)
         accumlatedTime += deltaTime;
 
         // Input logic - extract in logic (ako stignem)
+        int currentBKeyState = glfwGetKey(window, GLFW_KEY_B);
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         {
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
-        else if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+        else if (currentBKeyState == GLFW_RELEASE && previousBKeyState == GLFW_PRESS)
         {
             water1.switchRendering();
             water2.switchRendering();
@@ -203,16 +205,19 @@ int main(void)
             std::cout << "Time reset" << std::endl;
             timeSpeed = 1.0f;
         }
-        else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        else if ((glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS)
+            || (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS))
         {
             std::cout << "Slowing time down" << std::endl;
             if(timeSpeed > 0.1f) timeSpeed -= 0.05f;
         }
-        else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        else if ((glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS 
+            && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)) || (glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS))
         {
             std::cout << "Speeding time up" << std::endl;
             if(timeSpeed < 2.0f) timeSpeed += 0.05f;
         }
+        previousBKeyState = currentBKeyState;
 
         if (clicked) {
             clicked = false;
